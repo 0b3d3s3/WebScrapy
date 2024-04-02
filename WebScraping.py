@@ -24,14 +24,24 @@ if URL:
     }
     
     response = requests.get(URL, headers=headers)
-
+    dominio=URL.split(".")[0]+"."+URL.split(".")[1][0:3]
     soup = BeautifulSoup(response.text, 'html.parser')
     div = soup.find('div', class_='image-list')
     if div:
         enlaces = div.find_all('a')
-    HTML=[str(soup)]
+    
     # Imprimir los enlaces
     for enlace in enlaces:
-        Links.append(enlace.get('href'))
+        URL_IMG=dominio+enlace.get('href')
+        responseIMG = requests.get(URL_IMG, headers=headers)
+        soupIMG = BeautifulSoup(responseIMG.text, 'html.parser')
+        divIMG = soupIMG.find('div', class_='flexi')
+        if divIMG:
+            enlacesIMG = divIMG.findAll('img')
+        for link in enlacesIMG:
+            Links.append(link.get("src"))
+    for i in Links:
+        checkbox = st.checkbox('Seleccionar', key=i)
+        if checkbox:
+            st.image(i, caption='Imagen',use_column_width=False,width=360)
     st.write(Links)
-    st.write(HTML)

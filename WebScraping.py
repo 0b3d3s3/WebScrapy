@@ -41,7 +41,5 @@ if URL:
         for link in enlacesIMG:
             Links.append(link.get("src"))
     for i in Links:
-        checkbox = st.checkbox('Seleccionar', key=i)
-        if checkbox:
-            st.image(i, caption='Imagen',use_column_width=False,width=360)
+        st.image(i, caption='Imagen',use_column_width=False,width=360)
     st.write(Links)

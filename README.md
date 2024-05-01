@@ -1,2 +1,2 @@
 # WebScrapy
- Streamlit to web scraping
+ Streamlit to web scraping 1.0

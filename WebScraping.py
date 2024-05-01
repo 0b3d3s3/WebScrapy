@@ -1,11 +1,42 @@
 import streamlit as st
 from bs4 import BeautifulSoup
 import requests
+import zipfile
+import os
 
 def get_ext(link):
     ext=link.split("/")[-1].split(".")[1].split("?")[0]
     return(ext)
-    
+def mk_zip(carpeta="./image", nombre_archivo="image.zip"):
+    try:
+        with zipfile.ZipFile(nombre_archivo, 'w', zipfile.ZIP_DEFLATED) as zipf:
+            for root, dirs, files in os.walk(carpeta):
+                for file in files:
+                    zipf.write(os.path.join(root, file), os.path.relpath(os.path.join(root, file), carpeta))
+        print(f'Carpeta "{carpeta}" comprimida en el archivo "{nombre_archivo}"')
+    except Exception as e:
+        print('Error al comprimir la carpeta:', e)
+    with open(nombre_archivo, "rb") as archivo:
+        contenido_archivo = archivo.read()
+    return(contenido_archivo)
+def get_images(Links,headers):
+    X=0
+    st.write(["Download Image"])
+    for i in Links:
+        Descarga_IMG = requests.get(i,headers=headers)    
+        # Verifica si la solicitud fue exitosa (código de estado 200)
+        if Descarga_IMG.status_code == 200:
+            # Guarda el contenido de la respuesta en un archivo
+            print(i)
+            Nombre=str(X)+"."+get_ext(i)
+            with open("image/"+Nombre, 'wb') as f:
+                f.write(Descarga_IMG.content)
+            print("Imagen descargada exitosamente como {0}".format(Nombre))
+            X+=1
+        else:
+            print("Error al descargar la imagen. Código de estado:", response.status_code)
+    st.write(["ziping Image"])   
+    return (mk_zip())
     
 st.set_page_config(
     page_title = 'Wscraping',
@@ -20,7 +51,8 @@ st.markdown(
 )
 
 
-URL= st.text_input(label="URL", value="data_input")
+   
+URL= st.text_input(label="URL")
 NumIMG= st.number_input(label="URL", value=500)
 if URL:
     Links=[]
@@ -40,6 +72,7 @@ if URL:
             End=False
     st.write([len(enlaces)])
     # Imprimir los enlaces
+    st.write(["Get images Links"])
     for enlace in enlaces:
         URL_IMG=dominio+enlace.get('href')
         responseIMG = requests.get(URL_IMG, headers=headers)
@@ -49,18 +82,6 @@ if URL:
             enlacesIMG = divIMG.findAll('img')
         for link in enlacesIMG:
             Links.append(link.get("src"))
-    X=0
-    for i in Links:
-        Descarga_IMG = requests.get(i,headers=headers)    
-        # Verifica si la solicitud fue exitosa (código de estado 200)
-        if Descarga_IMG.status_code == 200:
-            # Guarda el contenido de la respuesta en un archivo
-            print(i)
-            Nombre=str(X)+"."+get_ext(i)
-            with open("image/"+Nombre, 'wb') as f:
-                f.write(Descarga_IMG.content)
-            print("Imagen descargada exitosamente como {0}".format(Nombre))
-            X+=1
-        else:
-            print("Error al descargar la imagen. Código de estado:", response.status_code)
     st.write(Links)
+        
+    st.download_button(label="Descargar", data=get_images(Links,headers), file_name="imagens.zip")

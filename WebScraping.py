@@ -3,6 +3,7 @@ from bs4 import BeautifulSoup
 import requests
 import zipfile
 import os
+import shutil
 
 def get_ext(link):
     ext=link.split("/")[-1].split(".")[1].split("?")[0]
@@ -18,10 +19,16 @@ def mk_zip(carpeta="./image", nombre_archivo="image.zip"):
         print('Error al comprimir la carpeta:', e)
     with open(nombre_archivo, "rb") as archivo:
         contenido_archivo = archivo.read()
+    if os.path.exists(carpeta):
+        shutil.rmtree(carpeta)
     return(contenido_archivo)
 def get_images(Links,headers):
     X=0
     st.write(["Download Image"])
+    carpeta="image"
+    if not os.path.exists(carpeta):
+        os.makedirs(carpeta)
+    
     for i in Links:
         Descarga_IMG = requests.get(i,headers=headers)    
         # Verifica si la solicitud fue exitosa (código de estado 200)
@@ -73,6 +80,7 @@ if URL:
     st.write([len(enlaces)])
     # Imprimir los enlaces
     st.write(["Get images Links"])
+    barra_progreso_Links = st.progress(0)
     for enlace in enlaces:
         URL_IMG=dominio+enlace.get('href')
         responseIMG = requests.get(URL_IMG, headers=headers)
